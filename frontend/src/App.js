@@ -1,6 +1,6 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import "./App.scss";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -11,7 +11,7 @@ export default function App() {
   const [intent, setIntent] = useState("");
   const [mockEvent, setMockEvent] = useState(null);
   const [error, setError] = useState("");
-   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const recognitionRef = useRef(null);
 
@@ -113,218 +113,127 @@ export default function App() {
       setIsListening(false);
     } catch (err) {}
   };
+
   const handleGoogleLogin = () => {
-  window.location.href = 'https://ai-voice-text-to-speech.onrender.com/auth/google';
-};
+    window.location.href =
+      "https://ai-voice-text-to-speech.onrender.com/auth/google";
+  };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-
-     const handleGoogleLogin = () => {
-   window.location.href = 'https://ai-voice-text-to-speech.onrender.com/auth/google';
- };
-        <div style={styles.header}>
-          <h1 style={styles.title}>AI Voice Agent</h1>
-          <p style={styles.subTitle}>
-            Free Demo (Voice → Intent → Mock Calendar + AI Reply)
-          </p>
-        </div>
-          <button 
-  style={{
-    width: '100%',
-    padding: '12px 18px',
-    borderRadius: 12, 
-    border: 'none',
-    background: '#4285F4',
-    color: 'white',
-    fontSize: 16,
-    cursor: 'pointer',
-    marginBottom: 10
-  }}
-  onClick={handleGoogleLogin}
->
-  🔗 Login with Google button
-</button>
-
-
-        <div style={styles.actions}>
-                       <button style={styles.googleBtn} onClick={handleGoogleLogin}>
-               🔗 Login with Google
-             </button>
-          {!isListening ? (
-            <button style={styles.primaryBtn} onClick={startListening}>
-              🎤 Start Talking
-            </button>
-          ) : (
-            <button style={styles.stopBtn} onClick={stopListening}>
-              ⏹ Stop
-            </button>
-          )}
-        </div>
-
-        {error && (
-          <div style={styles.errorBox}>
-            <b>Error:</b> {error}
+    <div className="app">
+      <header className="top-header">
+        <div className="header-content">
+          <div className="logo">
+            <span className="logo-icon">🤖</span>
+            <span className="logo-text">AI Agent</span>
           </div>
-        )}
 
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Transcript</h3>
-          <div style={styles.box}>{transcript || "..."}</div>
+          <button className="google-header-btn" onClick={handleGoogleLogin}>
+            <svg className="google-icon" viewBox="0 0 24 24" width="18" height="18">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span>Login with Google</span>
+          </button>
         </div>
-
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Agent Reply</h3>
-          <div style={styles.box}>{reply || "..."}</div>
-        </div>
-
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Detected Intent</h3>
-          <div style={styles.intentBox}>{intent || "..."}</div>
-        </div>
-
-        {mockEvent && (
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>Mock Google Calendar Result</h3>
-            <div style={styles.mockCard}>
-              <p style={styles.mockRow}><b>Event ID:</b> {mockEvent.id}</p>
-              <p style={styles.mockRow}><b>Title:</b> {mockEvent.title}</p>
-              <p style={styles.mockRow}><b>Date:</b> {mockEvent.date}</p>
-              <p style={styles.mockRow}><b>Time:</b> {mockEvent.time}</p>
+      </header>
+ 
+      <main className="main-content"> 
+        <div className="main-flex-1">
+          <div className="container">
+            <div className="welcome-section">
+              <h1 className="welcome-title">What can I help with?</h1>
+              <p className="welcome-subtitle">
+                Voice-powered AI assistant with calendar integration
+              </p>
             </div>
-          </div>
-        )}
 
-        <div style={styles.footer}>
-          <p style={styles.footerText}>
-            Demo Features: Free voice recognition, free voice output, HuggingFace AI reply (free),
-            fallback assistant logic, and mock Google Calendar creation.
-          </p>
+            <div className="voice-controls">
+              {!isListening ? (
+                <button className="voice-btn" onClick={startListening}>
+                  <span className="voice-icon">🎤</span>
+                  <span>Start Talking</span>
+                </button>
+              ) : (
+                <button className="voice-btn stop" onClick={stopListening}>
+                  <span className="voice-icon">⏹</span>
+                  <span>Stop</span>
+                </button>
+              )}
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="message-box error-message">
+                <strong>Error:</strong> {error}
+              </div>
+            )}
+
+            {(transcript || reply) && (
+              <div className="conversation">
+                {transcript && (
+                  <div className="message user-message">
+                    <div className="message-avatar">👤</div>
+                    <div className="message-content">
+                      <div className="message-label">You</div>
+                      <div className="message-text">{transcript}</div>
+                    </div>
+                  </div>
+                )}
+
+                {reply && (
+                  <div className="message assistant-message">
+                    <div className="message-avatar">🤖</div>
+                    <div className="message-content">
+                      <div className="message-label">AI Agent</div>
+                      <div className="message-text">{reply}</div>
+
+                      {intent && (
+                        <div className="intent-badge">Intent: {intent}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {mockEvent && (
+                  <div className="calendar-event">
+                    <div className="event-header">
+                      <span className="event-icon">📅</span>
+                      <span className="event-title">
+                        Calendar Event Created
+                      </span>
+                    </div>
+
+                    <div className="event-details">
+                      <div className="event-row">
+                        <span className="event-label">Title:</span>
+                        <span className="event-value">{mockEvent.title}</span>
+                      </div>
+                      <div className="event-row">
+                        <span className="event-label">Date:</span>
+                        <span className="event-value">{mockEvent.date}</span>
+                      </div>
+                      <div className="event-row">
+                        <span className="event-label">Time:</span>
+                        <span className="event-value">{mockEvent.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+ 
+        <footer className="app-footer">
+          <p>
+            Free demo with voice recognition, AI replies, and mock calendar
+            integration
+          </p>
+        </footer>
+      </main>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    background: "#f6f7fb",
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    fontFamily: "Arial, sans-serif"
-  },
-  card: {
-    width: 720,
-    background: "#fff",
-    borderRadius: 18,
-    padding: 30,
-    boxShadow: "0 10px 40px rgba(0,0,0,0.08)",
-    border: "1px solid #eee"
-  },
-  header: {
-    marginBottom: 20
-  },
-  title: {
-    margin: 0,
-    fontSize: 34,
-    fontWeight: 700
-  },
-  subTitle: {
-    marginTop: 8,
-    color: "#666",
-    fontSize: 15
-  },
-  actions: {
-    marginTop: 15,
-    marginBottom: 20
-  },
-  primaryBtn: {
-    width: "100%",
-    padding: "14px 18px",
-    borderRadius: 12,
-    border: "none",
-    background: "#111",
-    color: "#fff",
-    fontSize: 16,
-    cursor: "pointer"
-  },
-  stopBtn: {
-    width: "100%",
-    padding: "14px 18px",
-    borderRadius: 12,
-    border: "none",
-    background: "#d93025",
-    color: "#fff",
-    fontSize: 16,
-    cursor: "pointer"
-  },
-   googleBtn: {
-   width: "100%",
-   padding: "12px 18px",
-   borderRadius: 12,
-   border: "none",
-   background: "#4285F4",
-   color: "#fff",
-   fontSize: 16,
-   cursor: "pointer",
-   marginBottom: 10
- },
-  section: {
-    marginTop: 18
-  },
-  sectionTitle: {
-    margin: "0 0 8px 0",
-    fontSize: 16,
-    color: "#333"
-  },
-  box: {
-    background: "#f9fafb",
-    padding: 14,
-    borderRadius: 12,
-    border: "1px solid #eee",
-    minHeight: 55,
-    fontSize: 15
-  },
-  intentBox: {
-    background: "#eef6ff",
-    padding: 14,
-    borderRadius: 12,
-    border: "1px solid #dcecff",
-    minHeight: 40,
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#0b4aa2"
-  },
-  errorBox: {
-    padding: 12,
-    borderRadius: 12,
-    background: "#fff1f1",
-    border: "1px solid #ffd4d4",
-    color: "#b30000",
-    marginBottom: 15
-  },
-  mockCard: {
-    background: "#f3fff4",
-    border: "1px solid #c9f0cf",
-    padding: 14,
-    borderRadius: 12
-  },
-  mockRow: {
-    margin: "6px 0",
-    fontSize: 14
-  },
-  footer: {
-    marginTop: 25,
-    borderTop: "1px solid #eee",
-    paddingTop: 15
-  },
-  footerText: {
-    margin: 0,
-    color: "#777",
-    fontSize: 13
-  }
-};
