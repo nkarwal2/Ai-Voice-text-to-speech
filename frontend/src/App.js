@@ -11,6 +11,7 @@ export default function App() {
   const [intent, setIntent] = useState("");
   const [mockEvent, setMockEvent] = useState(null);
   const [error, setError] = useState("");
+   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const recognitionRef = useRef(null);
 
@@ -116,6 +117,10 @@ export default function App() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+
+     const handleGoogleLogin = () => {
+   window.location.href = 'https://ai-voice-text-to-speech.onrender.com/auth/google';
+ };
         <div style={styles.header}>
           <h1 style={styles.title}>AI Voice Agent</h1>
           <p style={styles.subTitle}>
@@ -124,6 +129,9 @@ export default function App() {
         </div>
 
         <div style={styles.actions}>
+                       <button style={styles.googleBtn} onClick={handleGoogleLogin}>
+               🔗 Login with Google
+             </button>
           {!isListening ? (
             <button style={styles.primaryBtn} onClick={startListening}>
               🎤 Start Talking
@@ -234,6 +242,17 @@ const styles = {
     fontSize: 16,
     cursor: "pointer"
   },
+   googleBtn: {
+   width: "100%",
+   padding: "12px 18px",
+   borderRadius: 12,
+   border: "none",
+   background: "#4285F4",
+   color: "#fff",
+   fontSize: 16,
+   cursor: "pointer",
+   marginBottom: 10
+ },
   section: {
     marginTop: 18
   },
