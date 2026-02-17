@@ -113,6 +113,9 @@ export default function App() {
       setIsListening(false);
     } catch (err) {}
   };
+  const handleGoogleLogin = () => {
+  window.location.href = 'https://ai-voice-text-to-speech.onrender.com/auth/google';
+};
 
   return (
     <div style={styles.page}>
@@ -127,6 +130,23 @@ export default function App() {
             Free Demo (Voice → Intent → Mock Calendar + AI Reply)
           </p>
         </div>
+          <button 
+  style={{
+    width: '100%',
+    padding: '12px 18px',
+    borderRadius: 12,
+    border: 'none',
+    background: '#4285F4',
+    color: 'white',
+    fontSize: 16,
+    cursor: 'pointer',
+    marginBottom: 10
+  }}
+  onClick={handleGoogleLogin}
+>
+  🔗 Login with Google
+</button>
+
 
         <div style={styles.actions}>
                        <button style={styles.googleBtn} onClick={handleGoogleLogin}>
