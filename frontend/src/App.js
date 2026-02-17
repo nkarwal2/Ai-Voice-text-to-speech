@@ -134,7 +134,7 @@ export default function App() {
   style={{
     width: '100%',
     padding: '12px 18px',
-    borderRadius: 12,
+    borderRadius: 12, 
     border: 'none',
     background: '#4285F4',
     color: 'white',
@@ -144,7 +144,7 @@ export default function App() {
   }}
   onClick={handleGoogleLogin}
 >
-  🔗 Login with Google
+  🔗 Login with Google button
 </button>
 
 
