@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
+import session from "express-session";
+import { google } from "googleapis";
 
 dotenv.config();
 
@@ -14,6 +16,26 @@ app.use(
     credentials: true
   })
 );
+
+// SESSION MIDDLEWARE
+app.use(session({
+  secret: process.env.SESSION_SECRET || "your-secret-key",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// GOOGLE OAUTH2 CLIENT
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -134,6 +156,52 @@ app.post("/api/mock-calendar", async (req, res) => {
     res.status(500).json({ status: "error", message: "Mock Calendar Failed" });
   }
 });
+
+// GOOGLE OAUTH ROUTES
+app.get("/auth/google", (req, res) => {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: "offline",
+    scope: ["https://www.googleapis.com/auth/calendar.events"]
+  });
+  res.redirect(authUrl);
+});
+
+// GOOGLE OAUTH CALLBACK - STORES TOKENS IN SESSION
+app.get("/auth/google/callback", async (req, res) => {
+  try {
+    const { code } = req.query;
+    const { tokens } = await oauth2Client.getToken(code);
+    
+    // Store tokens in session
+    req.session.tokens = tokens;
+    req.session.googleAccessToken = tokens.access_token;
+    req.session.googleRefreshToken = tokens.refresh_token;
+    
+    console.log("Google OAuth Success - Tokens stored in session");
+    res.redirect(`${process.env.FRONTEND_URL}?auth=success`);
+  } catch (error) {
+    console.error("OAuth Error:", error);
+    res.redirect(`${process.env.FRONTEND_URL}?auth=failed`);
+  }
+});
+
+// CHECK AUTHENTICATION STATUS
+app.get("/auth/status", (req, res) => {
+  if (req.session.googleAccessToken) {
+    res.json({ authenticated: true, token: req.session.googleAccessToken });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
+
+// LOGOUT ROUTE
+app.get("/auth/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ error: "Logout failed" });
+    res.json({ status: "logged out" });
+  });
+});
+
 
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
