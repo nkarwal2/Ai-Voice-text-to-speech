@@ -121,9 +121,6 @@ export default function App() {
     <div style={styles.page}>
       <div style={styles.card}>
 
-     const handleGoogleLogin = () => {
-   window.location.href = 'https://ai-voice-text-to-speech.onrender.com/auth/google';
- };
         <div style={styles.header}>
           <h1 style={styles.title}>AI Voice Agent</h1>
           <p style={styles.subTitle}>
