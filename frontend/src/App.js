@@ -38,6 +38,7 @@ export default function App() {
   const ttsQueueRef = useRef([]);
   const ttsBufferRef = useRef("");
   const ttsActiveRef = useRef(false);
+  const streamAbortRef = useRef(null);
 
   const currentLang = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
@@ -51,6 +52,15 @@ export default function App() {
     ttsBufferRef.current = "";
     ttsActiveRef.current = false;
     setIsSpeaking(false);
+  };
+
+  const stopAll = () => {
+    stopSpeaking();
+    if (streamAbortRef.current) {
+      streamAbortRef.current.abort();
+      streamAbortRef.current = null;
+    }
+    setIsStreaming(false);
   };
 
   const speakText = (text) => {
@@ -158,6 +168,8 @@ export default function App() {
     setIsStreaming(true);
     setLastCalendarUrl(null);
     stopSpeaking();
+    streamAbortRef.current = new AbortController();
+    const signal = streamAbortRef.current.signal;
     setMessages((prev) => [...prev, { role: "user", content: text }]);
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
@@ -167,6 +179,7 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ text, language }),
+        signal,
       });
 
       if (!res.ok) {
@@ -199,6 +212,7 @@ export default function App() {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+        if (signal.aborted) break;
         buffer += decoder.decode(value, { stream: true });
         if (!buffer.includes("\n")) continue;
         const lines = buffer.split("\n");
@@ -255,14 +269,24 @@ export default function App() {
         }
       }
     } catch (err) {
+      if (err?.name === "AbortError") {
+        streamAbortRef.current = null;
+        return;
+      }
       const msg = err?.message?.includes("Backend") || err?.message?.includes("fetch")
         ? err.message
         : "Failed to get response. Check that the backend is running (e.g. `node server.js` in the backend folder) and LM Studio if needed.";
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: `❌ ${msg}` },
-      ]);
+      setMessages((prev) => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last?.role === "assistant" && last?.content === "") {
+          updated[updated.length - 1] = { role: "assistant", content: `❌ ${msg}` };
+          return updated;
+        }
+        return [...prev, { role: "assistant", content: `❌ ${msg}` }];
+      });
     } finally {
+      streamAbortRef.current = null;
       setIsStreaming(false);
     }
   };
@@ -474,12 +498,14 @@ export default function App() {
 
           {/* Input area */}
           <div className="p-4 bg-white border-t border-gray-200">
-            {isSpeaking && (
+            {(isSpeaking || isStreaming) && (
               <div className="mb-2 flex items-center justify-between rounded-lg bg-red-50 border border-red-200 px-3 py-2">
-                <span className="text-sm text-red-700">Agent is speaking</span>
+                <span className="text-sm text-red-700">
+                  {isStreaming ? "Agent is typing…" : "Agent is speaking"}
+                </span>
                 <button
                   type="button"
-                  onClick={stopSpeaking}
+                  onClick={stopAll}
                   className="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700"
                 >
                   Stop
