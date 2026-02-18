@@ -324,6 +324,85 @@ function fixRunTogetherWords(text) {
   return out;
 }
 
+// -------------------- GOOGLE OAUTH --------------------
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || `http://localhost:${PORT}/auth/google/callback`;
+
+app.get("/auth/google", (req, res) => {
+  if (!GOOGLE_CLIENT_ID) {
+    return res.redirect(FRONTEND_URL + "?auth_error=Google+OAuth+not+configured");
+  }
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: GOOGLE_REDIRECT_URI,
+    response_type: "code",
+    scope: "openid email profile",
+    access_type: "offline",
+    prompt: "consent",
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+});
+
+app.get("/auth/google/callback", async (req, res) => {
+  const { code, error } = req.query;
+  if (error || !code) {
+    return res.redirect(FRONTEND_URL + "?auth_error=" + (error || "no_code"));
+  }
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    return res.redirect(FRONTEND_URL + "?auth_error=Google+OAuth+not+configured");
+  }
+  try {
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: GOOGLE_REDIRECT_URI,
+        grant_type: "authorization_code",
+      }).toString(),
+    });
+    const tokenData = await tokenRes.json();
+    if (tokenData.error) {
+      return res.redirect(FRONTEND_URL + "?auth_error=" + encodeURIComponent(tokenData.error_description || tokenData.error));
+    }
+    const accessToken = tokenData.access_token;
+    const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const user = await userRes.json();
+    if (user.error) {
+      return res.redirect(FRONTEND_URL + "?auth_error=failed_to_get_profile");
+    }
+    req.session.user = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      picture: user.picture,
+    };
+    res.redirect(FRONTEND_URL + "?auth=success");
+  } catch (err) {
+    console.error("Google OAuth error:", err);
+    res.redirect(FRONTEND_URL + "?auth_error=" + encodeURIComponent(err.message || "oauth_failed"));
+  }
+});
+
+app.get("/auth/me", (req, res) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ user: null });
+  }
+  res.json({ user: req.session.user });
+});
+
+app.post("/auth/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ error: "Logout failed" });
+    res.json({ status: "ok" });
+  });
+});
+
 // -------------------- ROUTES --------------------
 app.get("/", (req, res) => {
   res.json({
